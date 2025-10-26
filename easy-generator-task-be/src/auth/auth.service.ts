@@ -7,6 +7,7 @@ import { TokenPayload } from './token-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { UserInfo } from 'src/users/dtos/user-info.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,8 +20,15 @@ export class AuthService {
     async signUp(signUpInfo: SignUpInfo, response: Response) {
         const hashedPassword = await bcrypt.hash(signUpInfo.password, 10);
         signUpInfo.password = hashedPassword;
-        const user = await this.usersService.createUser(signUpInfo);
-        await this.createAccessTokenCookie(user._id.toString(), response);
+        
+        const userInfo: UserInfo = {
+            email: signUpInfo.email,
+            name: signUpInfo.name,
+            password: signUpInfo.password,
+        };
+
+        const userId = await this.usersService.createUser(userInfo);
+        await this.createAccessTokenCookie(userId.toString(), response);
     }
 
     async signIn(signInInfo: SignInInfo, response: Response) {
@@ -34,7 +42,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid password');
         }
 
-        await this.createAccessTokenCookie(user._id.toString(), response);
+        await this.createAccessTokenCookie(user.id!.toString(), response);
     }
 
     async createAccessTokenCookie(userId: string, response: Response) {
@@ -42,7 +50,7 @@ export class AuthService {
         const accessToken = await this.jwtService.signAsync(tokenPayload);
         response.cookie('Authentication', accessToken, {
             httpOnly: true,
-            expires: new Date(Date.now() + this.configService.getOrThrow<number>('jwt.accessTokenExpiration')*1000),
+            maxAge: 15 * 60 * 10000, 
         });
     }
 }

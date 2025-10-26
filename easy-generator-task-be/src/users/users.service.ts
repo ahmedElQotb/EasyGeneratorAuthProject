@@ -7,7 +7,7 @@ import { UserInfo } from './dtos/user-info.dto';
 export class UsersService {
     constructor(private readonly usersRepository: UsersRepository) {}
 
-    async createUser(userInfo: UserInfo): Promise<User> {
+    async createUser(userInfo: UserInfo): Promise<string> {
         try {
             return await this.usersRepository.create(userInfo);
           } catch (error) {
@@ -20,11 +20,11 @@ export class UsersService {
         }
     }
 
-    async findUser(email: string): Promise<User | null> {
+    async findUser(email: string): Promise<UserInfo | null> {
         return await this.usersRepository.findUser(email);
     }  
 
-    async findUserById(id: string): Promise<User | null> {
+    async findUserById(id: string): Promise<UserInfo | null> {
         const user = await this.usersRepository.findUserById(id);
         if (!user) {
             throw new UnauthorizedException('No user found with this id');

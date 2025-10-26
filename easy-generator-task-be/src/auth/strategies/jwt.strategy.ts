@@ -21,10 +21,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: TokenPayload) {
-    const user = await this.usersService.findUserById(payload.userId);
-    if (!user) {
+    const userInfo = await this.usersService.findUserById(payload.userId);
+    if (!userInfo) {
       throw new UnauthorizedException('No user found with this id');
     }
-    return user;
+    return userInfo;
   }
 }
