@@ -38,7 +38,11 @@ export default function SignUp() {
       login();
       navigate('/home');
     } catch (error: any) {
-      setError(error?.response?.data?.message || 'Sign up failed. Please try again.');
+      const errorMessage = error?.response?.data?.message;
+      const formattedError = Array.isArray(errorMessage) 
+        ? errorMessage.join(', ') 
+        : errorMessage || 'Sign up failed. Please try again.';
+      setError(formattedError);
     }
   };
 
@@ -62,7 +66,25 @@ export default function SignUp() {
         <div className="form-group">
           <label>Password</label>
           <input type="password" {...register('password')} />
-          {errors.password && <span className="error">{errors.password.message}</span>}
+          {errors.password && errors.password.message && (
+            <ul className="error-list">
+              {typeof errors.password.message === 'string' 
+                ? errors.password.message.split(', ').map((msg, idx) => (
+                    <li key={idx}>{msg}</li>
+                  ))
+                : <li>{errors.password.message}</li>
+              }
+            </ul>
+          )}
+          <div className="password-requirements">
+            <small>Password must contain:</small>
+            <ul>
+              <li>At least 8 characters</li>
+              <li>At least one letter (upper or lower)</li>
+              <li>At least one number</li>
+              <li>At least one special character</li>
+            </ul>
+          </div>
         </div>
 
         <button type="submit" className="btn-primary">

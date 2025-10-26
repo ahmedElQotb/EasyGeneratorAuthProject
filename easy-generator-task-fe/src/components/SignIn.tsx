@@ -32,7 +32,11 @@ export default function SignIn() {
       login();
       navigate('/home');
     } catch (error: any) {
-      setError(error?.response?.data?.message || 'Sign in failed. Please try again.');
+      const errorMessage = error?.response?.data?.message;
+      const formattedError = Array.isArray(errorMessage) 
+        ? errorMessage.join(', ') 
+        : errorMessage || 'Sign in failed. Please try again.';
+      setError(formattedError);
     }
   };
 

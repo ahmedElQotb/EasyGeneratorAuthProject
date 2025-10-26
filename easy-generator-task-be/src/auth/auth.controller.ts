@@ -69,7 +69,7 @@ export class AuthController {
     }
 
     private clearCookies(response: Response) {
-        response.clearCookie(COOKIE_NAMES.AUTHENTICATION);
-        response.clearCookie(COOKIE_NAMES.REFRESH_TOKEN);
+        response.clearCookie(COOKIE_NAMES.AUTHENTICATION, { httpOnly: true });
+        response.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { httpOnly: true });
     }
 }
