@@ -18,7 +18,6 @@ async function bootstrap() {
       credentials: true,
     });
 
-    // Swagger setup
     const config = new DocumentBuilder()
       .setTitle('Easy Generator Auth API')
       .setDescription('API documentation for authentication and content management')
