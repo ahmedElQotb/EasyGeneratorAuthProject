@@ -5,12 +5,24 @@ import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from './config/config-keys';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   
   const environment = configService.getOrThrow<string>(CONFIG_KEYS.ENVIRONMENT);
+  
+  // Global rate limiting with express-rate-limit
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  });
+  
+  app.use(limiter);
   
   if (environment === 'development') {
     app.enableCors({
