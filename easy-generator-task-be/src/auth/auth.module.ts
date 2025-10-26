@@ -6,22 +6,31 @@ import { AuthService } from './auth.service';
 import { UsersModule } from 'src/users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { StringValue } from 'ms';
+import { RefreshTokenRepository } from './auth.refresh-token-repository';
+import { RefreshToken, RefreshTokenSchema } from './schema/refresh-token.schema';
+import { MongooseModule } from '@nestjs/mongoose';
+
 @Module({
   imports: [
     UsersModule,
+    PassportModule,
+    MongooseModule.forFeature([
+      { 
+        name: RefreshToken.name,
+        schema: RefreshTokenSchema,
+      },
+    ]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('jwt.secret'),
         signOptions: {
-          expiresIn: config.getOrThrow<string>('jwt.accessTokenExpiration') as StringValue,
+          expiresIn: config.getOrThrow<number>('jwt.accessTokenExpiration'),
         },
       }),
       inject: [ConfigService],
-    }),
-    PassportModule
+    })
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RefreshTokenRepository],
 })
 export class AuthModule {}

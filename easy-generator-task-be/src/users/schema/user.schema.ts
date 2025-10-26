@@ -6,7 +6,7 @@ export class User {
   @Prop({ type: SchemaTypes.ObjectId, auto: true })
   _id: Types.ObjectId;
 
-  @Prop({ unique: true, required: true })
+  @Prop({ unique: true, required: true, index: true })
   email: string;
 
   @Prop({ required: true })

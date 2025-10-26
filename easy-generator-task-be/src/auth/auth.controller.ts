@@ -19,4 +19,16 @@ export class AuthController {
     async signIn(@Body() signInInfo: SignInInfo, @Res({ passthrough: true }) response: Response) {
     return this.authService.signIn(signInInfo, response);
   }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Body('refreshToken') refreshToken: string, @Res({ passthrough: true }) response: Response) {
+    return this.authService.refreshAccessToken(refreshToken, response);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Body('refreshToken') refreshToken: string) {
+    return this.authService.logout(refreshToken);
+  }
 }
