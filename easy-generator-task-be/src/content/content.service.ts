@@ -13,8 +13,7 @@ export class ContentService {
     "Do one thing every day that scares you. - Eleanor Roosevelt",
     "The only impossible journey is the one you never begin. - Tony Robbins",
     "Don't judge each day by the harvest you reap but by the seeds that you plant. - Robert Louis Stevenson",
-    "The purpose of our lives is to be happy. - Dalai Lama",
-    "Life is a long lesson in humility. - James M. Barrie",
+    "The purpose of our lives is to be happy. - Dalai Lama"
   ];
 
   getQuote(): string {
