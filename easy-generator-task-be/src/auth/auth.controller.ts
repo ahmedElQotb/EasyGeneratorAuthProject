@@ -1,4 +1,5 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Res, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { SignUpInfo } from './dtos/sign-up-info.dto';
 import { SignInInfo } from './dtos/sign-in-info.dto';
@@ -8,6 +9,7 @@ import { COOKIE_NAMES, TOKEN_EXPIRATIONS } from './constants/auth.constants';
 import { ConfigService } from '@nestjs/config';
 import { AuthResponseMessage } from './dtos/auth-response.dto';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
     constructor(
@@ -17,6 +19,10 @@ export class AuthController {
 
     @Post('signUp')
     @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Sign up a new user' })
+    @ApiResponse({ status: 201, description: 'User successfully created' })
+    @ApiResponse({ status: 400, description: 'Bad request - validation error' })
+    @ApiResponse({ status: 409, description: 'Conflict - email already exists' })
     async signUp(@Body() signUpInfo: SignUpInfo, @Res({ passthrough: true }) response: Response): Promise<AuthResponseMessage> {
         const { accessToken, refreshToken } = await this.authService.signUp(signUpInfo);
         this.setCookies(response, accessToken, refreshToken);
@@ -25,6 +31,9 @@ export class AuthController {
 
     @Post('signIn')
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Sign in an existing user' })
+    @ApiResponse({ status: 200, description: 'User successfully signed in' })
+    @ApiResponse({ status: 401, description: 'Unauthorized - invalid credentials' })
     async signIn(@Body() signInInfo: SignInInfo, @Res({ passthrough: true }) response: Response): Promise<AuthResponseMessage> {
         const { accessToken, refreshToken } = await this.authService.signIn(signInInfo);
         this.setCookies(response, accessToken, refreshToken);
@@ -33,6 +42,9 @@ export class AuthController {
 
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Refresh access token' })
+    @ApiResponse({ status: 200, description: 'Token successfully refreshed' })
+    @ApiResponse({ status: 401, description: 'Unauthorized - invalid or expired refresh token' })
     async refreshToken(@Req() request: Request, @Res({ passthrough: true }) response: Response): Promise<AuthResponseMessage> {
         const refreshToken = request.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
         const { accessToken } = await this.authService.refreshAccessToken(refreshToken);
@@ -42,6 +54,8 @@ export class AuthController {
 
     @Post('logout')
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Logout user' })
+    @ApiResponse({ status: 200, description: 'User successfully logged out' })
     async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response): Promise<AuthResponseMessage> {
         const refreshToken = request.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
         await this.authService.logout(refreshToken);

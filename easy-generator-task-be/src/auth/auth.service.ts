@@ -11,16 +11,16 @@ import { RefreshTokenRepository } from './auth.refresh-token-repository';
 import { Types } from 'mongoose';
 import * as crypto from 'crypto';
 import { TOKEN_EXPIRATIONS } from './constants/auth.constants';
+import { TokenResponse } from './dtos/token-response.dto';
 
 @Injectable()
 export class AuthService {
-
     constructor(private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
         private readonly refreshTokenRepository: RefreshTokenRepository
     ) {}
 
-    async signUp(signUpInfo: SignUpInfo) {
+    async signUp(signUpInfo: SignUpInfo) : Promise<TokenResponse> {
         const hashedPassword = await bcrypt.hash(signUpInfo.password, 10);
         signUpInfo.password = hashedPassword;
         
@@ -31,10 +31,10 @@ export class AuthService {
         };
 
         const userId = await this.usersService.createUser(userInfo);
-        return this.createTokens(userId.toString());
+        return await this.createTokens(userId.toString());
     }
 
-    async signIn(signInInfo: SignInInfo) {
+    async signIn(signInInfo: SignInInfo) : Promise<TokenResponse> {
         const user = await this.usersService.findUser(signInInfo.email);
         if (!user) {
             throw new UnauthorizedException('No user found with this email');
@@ -45,10 +45,10 @@ export class AuthService {
             throw new UnauthorizedException('Invalid password');
         }
 
-        return this.createTokens(user.id!);
+        return await this.createTokens(user.id!);
     }
 
-    private async createTokens(userId: string) {
+    private async createTokens(userId: string) : Promise<TokenResponse> {
         // Access token
         const tokenPayload: TokenPayload = { userId: userId.toString() };
         const accessToken = await this.jwtService.signAsync(tokenPayload);
