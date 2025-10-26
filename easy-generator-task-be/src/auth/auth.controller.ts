@@ -8,6 +8,7 @@ import type { Request } from 'express';
 import { COOKIE_NAMES, TOKEN_EXPIRATIONS } from './constants/auth.constants';
 import { ConfigService } from '@nestjs/config';
 import { AuthResponseMessage } from './dtos/auth-response.dto';
+import { CONFIG_KEYS } from 'src/config/config-keys';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -72,6 +73,7 @@ export class AuthController {
         response.cookie(COOKIE_NAMES.AUTHENTICATION, accessToken, {
             httpOnly: true,
             maxAge: TOKEN_EXPIRATIONS.ACCESS_TOKEN * 1000,
+            secure: this.configService.get(CONFIG_KEYS.NODE_ENV) === 'production',
         });
     }
 
@@ -79,6 +81,7 @@ export class AuthController {
         response.cookie(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
             httpOnly: true,
             maxAge: TOKEN_EXPIRATIONS.REFRESH_TOKEN * 1000,
+            secure: this.configService.get(CONFIG_KEYS.NODE_ENV) === 'production',
         });
     }
 
