@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { RefreshTokenRepository } from './auth.refresh-token-repository';
 import { RefreshToken, RefreshTokenSchema } from './schema/refresh-token.schema';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TOKEN_EXPIRATIONS } from './constants/auth.constants';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('jwt.secret'),
         signOptions: {
-          expiresIn: config.getOrThrow<number>('jwt.accessTokenExpiration'),
+          expiresIn: TOKEN_EXPIRATIONS.ACCESS_TOKEN,
         },
       }),
       inject: [ConfigService],

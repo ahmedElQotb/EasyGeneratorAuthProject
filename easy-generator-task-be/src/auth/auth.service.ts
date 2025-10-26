@@ -5,7 +5,6 @@ import { SignInInfo } from './dtos/sign-in-info.dto';
 import * as bcrypt from 'bcrypt';
 import { TokenPayload } from './token-payload.interface';
 import { JwtService } from '@nestjs/jwt';
-import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { UserInfo } from 'src/users/dtos/user-info.dto';
 import { RefreshTokenRepository } from './auth.refresh-token-repository';
@@ -21,7 +20,7 @@ export class AuthService {
         private readonly refreshTokenRepository: RefreshTokenRepository
     ) {}
 
-    async signUp(signUpInfo: SignUpInfo, response: Response) {
+    async signUp(signUpInfo: SignUpInfo) {
         const hashedPassword = await bcrypt.hash(signUpInfo.password, 10);
         signUpInfo.password = hashedPassword;
         
@@ -32,10 +31,10 @@ export class AuthService {
         };
 
         const userId = await this.usersService.createUser(userInfo);
-        await this.createTokens(userId.toString(), response);
+        return this.createTokens(userId.toString());
     }
 
-    async signIn(signInInfo: SignInInfo, response: Response) {
+    async signIn(signInInfo: SignInInfo) {
         const user = await this.usersService.findUser(signInInfo.email);
         if (!user) {
             throw new UnauthorizedException('No user found with this email');
@@ -46,10 +45,10 @@ export class AuthService {
             throw new UnauthorizedException('Invalid password');
         }
 
-        await this.createTokens(user.id!, response);
+        return this.createTokens(user.id!);
     }
 
-    private async createTokens(userId: string, response: Response) {
+    private async createTokens(userId: string) {
         // Access token
         const tokenPayload: TokenPayload = { userId: userId.toString() };
         const accessToken = await this.jwtService.signAsync(tokenPayload);
@@ -66,19 +65,14 @@ export class AuthService {
             isRevoked: false,
         });
         
-        // Set cookies
-        response.cookie('Authentication', accessToken, {
-            httpOnly: true,
-            maxAge: this.configService.getOrThrow<number>('jwt.accessTokenExpiration'),
-        });
-        
-        response.cookie('RefreshToken', refreshToken, {
-            httpOnly: true,
-            maxAge: this.configService.getOrThrow<number>('jwt.refreshTokenExpiration'),
-        });
+        return { accessToken, refreshToken };
     }
     
-    async refreshAccessToken(refreshToken: string, response: Response) {
+    async refreshAccessToken(refreshToken: string) {
+        if (!refreshToken) {
+            throw new UnauthorizedException('No refresh token found');
+        }
+
         const tokenDoc = await this.refreshTokenRepository.findByToken(refreshToken);
         
         if (!tokenDoc) {
@@ -89,20 +83,17 @@ export class AuthService {
             throw new UnauthorizedException('Refresh token expired');
         }
         
-        // Generate new access token
         const tokenPayload: TokenPayload = { userId: tokenDoc.userId.toString() };
         const accessToken = await this.jwtService.signAsync(tokenPayload);
         
-        response.cookie('Authentication', accessToken, {
-            httpOnly: true,
-            maxAge: this.configService.getOrThrow<number>('jwt.accessTokenExpiration'),
-        });
-        
-        return { message: 'Access token refreshed' };
+        return { accessToken };
     }
 
     async logout(refreshToken: string) {
+        if (!refreshToken) {
+            throw new UnauthorizedException('No refresh token found');
+        }
+
         await this.refreshTokenRepository.revokeToken(refreshToken);
-        return { message: 'Logged out successfully' };
     }
 }
