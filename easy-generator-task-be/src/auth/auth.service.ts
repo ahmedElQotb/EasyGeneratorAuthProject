@@ -57,7 +57,7 @@ export class AuthService {
         const refreshToken = crypto.randomBytes(64).toString('hex');
         const expiresAt = new Date();
         expiresAt.setTime(expiresAt.getTime() + TOKEN_EXPIRATIONS.REFRESH_TOKEN * 1000); 
-        
+
         await this.refreshTokenRepository.create({
             token: refreshToken,
             userId: new Types.ObjectId(userId),
@@ -70,7 +70,7 @@ export class AuthService {
     
     async refreshAccessToken(refreshToken: string) {
         if (!refreshToken) {
-            throw new UnauthorizedException('No refresh token found');
+            throw new UnauthorizedException('No refresh token found in request');
         }
 
         const tokenDoc = await this.refreshTokenRepository.findByToken(refreshToken);
@@ -91,7 +91,7 @@ export class AuthService {
 
     async logout(refreshToken: string) {
         if (!refreshToken) {
-            throw new UnauthorizedException('No refresh token found');
+            throw new UnauthorizedException('No refresh token found in request');
         }
 
         await this.refreshTokenRepository.revokeToken(refreshToken);
