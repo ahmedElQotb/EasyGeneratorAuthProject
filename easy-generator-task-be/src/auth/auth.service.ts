@@ -90,10 +90,6 @@ export class AuthService {
     }
 
     async logout(refreshToken: string) {
-        if (!refreshToken) {
-            throw new UnauthorizedException('No refresh token found in request');
-        }
-
         await this.refreshTokenRepository.revokeToken(refreshToken);
     }
 }
