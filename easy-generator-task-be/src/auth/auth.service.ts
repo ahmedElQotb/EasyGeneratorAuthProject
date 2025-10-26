@@ -28,7 +28,7 @@ export class AuthService {
         };
 
         const userId = await this.usersService.createUser(userInfo);
-        await this.createAccessTokenCookie(userId.toString(), response);
+        await this.createAccessInTokenCookie(userId.toString(), response);
     }
 
     async signIn(signInInfo: SignInInfo, response: Response) {
@@ -42,15 +42,15 @@ export class AuthService {
             throw new UnauthorizedException('Invalid password');
         }
 
-        await this.createAccessTokenCookie(user.id!.toString(), response);
+        await this.createAccessInTokenCookie(user.id!.toString(), response);
     }
 
-    async createAccessTokenCookie(userId: string, response: Response) {
+    async createAccessInTokenCookie(userId: string, response: Response) {
         const tokenPayload: TokenPayload = { userId };
         const accessToken = await this.jwtService.signAsync(tokenPayload);
         response.cookie('Authentication', accessToken, {
             httpOnly: true,
-            maxAge: 15 * 60 * 10000, 
+            maxAge: 15 * 60 * 1000, 
         });
     }
 }
