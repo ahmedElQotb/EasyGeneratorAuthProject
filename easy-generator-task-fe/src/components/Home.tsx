@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
-import { usersService } from '../services/usersService';
+import { contentService } from '../services/contentService';
 
 export default function Home() {
   const navigate = useNavigate();
   const { logout: logoutContext } = useAuth();
-  const [username, setUsername] = useState<string>('');
+  const [quote, setQuote] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   const handleLogout = async () => {
@@ -20,13 +20,13 @@ export default function Home() {
     }
   };
 
-  const handleGetUsername = async () => {
+  const handleGetQuote = async () => {
     try {
       setError('');
-      const data = await usersService.getUsername();
-      setUsername(data.name);
+      const data = await contentService.getQuote();
+      setQuote(data.quote);
     } catch (error: any) {
-      setError(error?.response?.data?.message || 'Failed to fetch username');
+      setError(error?.response?.data?.message || 'Failed to fetch quote');
     }
   };
 
@@ -37,13 +37,13 @@ export default function Home() {
         
         {error && <div className="error-message">{error}</div>}
         
-        <div className="username-section">
-          <button onClick={handleGetUsername} className="btn-secondary">
-            Say My Name
+        <div className="quote-section">
+          <button onClick={handleGetQuote} className="btn-secondary">
+            Get Quote
           </button>
-          {username && (
-            <div className="username-display">
-              <strong>Your name:</strong> {username}
+          {quote && (
+            <div className="quote-display">
+              <strong>Quote:</strong> {quote}
             </div>
           )}
         </div>

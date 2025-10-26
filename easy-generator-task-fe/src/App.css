@@ -131,7 +131,7 @@ body {
   font-size: 32px;
 }
 
-.username-section {
+.quote-section {
   margin: 20px 0;
   display: flex;
   flex-direction: column;
@@ -154,15 +154,17 @@ body {
   transform: translateY(-2px);
 }
 
-.username-display {
-  padding: 10px;
+.quote-display {
+  padding: 15px;
   background: #f8f9fa;
   border-radius: 5px;
   border: 1px solid #dee2e6;
   font-size: 16px;
+  line-height: 1.6;
+  text-align: center;
 }
 
-.username-display strong {
+.quote-display strong {
   color: #495057;
 }
 
