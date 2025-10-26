@@ -10,13 +10,13 @@ import { UserInfo } from 'src/users/dtos/user-info.dto';
 import { RefreshTokenRepository } from './auth.refresh-token-repository';
 import { Types } from 'mongoose';
 import * as crypto from 'crypto';
+import { TOKEN_EXPIRATIONS } from './constants/auth.constants';
 
 @Injectable()
 export class AuthService {
 
     constructor(private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
-        private readonly configService: ConfigService,
         private readonly refreshTokenRepository: RefreshTokenRepository
     ) {}
 
@@ -56,7 +56,7 @@ export class AuthService {
         // Refresh token
         const refreshToken = crypto.randomBytes(64).toString('hex');
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+        expiresAt.setTime(expiresAt.getTime() + TOKEN_EXPIRATIONS.REFRESH_TOKEN * 1000); 
         
         await this.refreshTokenRepository.create({
             token: refreshToken,

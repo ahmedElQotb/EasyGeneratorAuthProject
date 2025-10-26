@@ -4,6 +4,6 @@
   } as const;
 
 export const TOKEN_EXPIRATIONS = {
-    ACCESS_TOKEN: 900,
-    REFRESH_TOKEN: 172800 ,
+    ACCESS_TOKEN: 10,
+    REFRESH_TOKEN: 50 ,
   } as const;
