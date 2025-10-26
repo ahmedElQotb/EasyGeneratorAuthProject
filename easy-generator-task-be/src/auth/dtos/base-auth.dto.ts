@@ -6,8 +6,8 @@ export class BaseAuthDto {
 
   @IsString()
   @MinLength(8)
-  @Matches(/^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).*$/, {
-    message: 'Password must contain at least one number, one uppercase letter, and one special character'
+  @Matches(/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).*$/, {
+    message: 'Password must contain at least one number, one letter (upper or lower), and one special character'
   })
   password: string;
 }
