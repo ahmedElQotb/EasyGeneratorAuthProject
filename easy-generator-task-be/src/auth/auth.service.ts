@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { SignUpInfo } from './dtos/sign-up-info.dto';
 import { UsersService } from 'src/users/users.service';
 import { SignInInfo } from './dtos/sign-in-info.dto';
@@ -15,12 +15,16 @@ import { TokenResponse } from './dtos/token-response.dto';
 
 @Injectable()
 export class AuthService {
+    private readonly logger = new Logger(AuthService.name);
+
     constructor(private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
         private readonly refreshTokenRepository: RefreshTokenRepository
     ) {}
 
     async signUp(signUpInfo: SignUpInfo) : Promise<TokenResponse> {
+        this.logger.log(`📝 Sign up attempt: ${signUpInfo.email}`);
+        
         const hashedPassword = await bcrypt.hash(signUpInfo.password, 10);
         signUpInfo.password = hashedPassword;
         
@@ -31,20 +35,27 @@ export class AuthService {
         };
 
         const userId = await this.usersService.createUser(userInfo);
+        this.logger.log(`User created successfully: ${userId}`);
+        
         return await this.createTokens(userId.toString());
     }
 
     async signIn(signInInfo: SignInInfo) : Promise<TokenResponse> {
+        this.logger.log(`Sign in attempt: ${signInInfo.email}`);
+        
         const user = await this.usersService.findUser(signInInfo.email);
         if (!user) {
+            this.logger.warn(`Sign in failed: User not found - ${signInInfo.email}`);
             throw new UnauthorizedException('No user found with this email');
         }
 
         const isMatch = await bcrypt.compare(signInInfo.password, user.password);
         if (!isMatch) {
+            this.logger.warn(`Sign in failed: Invalid password - ${signInInfo.email}`);
             throw new UnauthorizedException('Invalid password');
         }
 
+        this.logger.log(`Sign in successful: ${signInInfo.email}`);
         return await this.createTokens(user.id!);
     }
 
@@ -70,18 +81,23 @@ export class AuthService {
     
     async refreshAccessToken(refreshToken: string) {
         if (!refreshToken) {
+            this.logger.warn('Refresh attempt with no token');
             throw new UnauthorizedException('No refresh token found in request');
         }
 
         const tokenDoc = await this.refreshTokenRepository.findByToken(refreshToken);
         
         if (!tokenDoc) {
+            this.logger.warn('Invalid refresh token attempt');
             throw new UnauthorizedException('Invalid refresh token');
         }
         
         if (new Date() > tokenDoc.expiresAt) {
+            this.logger.warn(`Expired refresh token: ${tokenDoc.userId}`);
             throw new UnauthorizedException('Refresh token expired');
         }
+        
+        this.logger.log(`Token refreshed for user: ${tokenDoc.userId}`);
         
         const tokenPayload: TokenPayload = { userId: tokenDoc.userId.toString() };
         const accessToken = await this.jwtService.signAsync(tokenPayload);
@@ -90,6 +106,8 @@ export class AuthService {
     }
 
     async logout(refreshToken: string) {
+        this.logger.log('Logout request received');
         await this.refreshTokenRepository.revokeToken(refreshToken);
+        this.logger.log('Logout successful');
     }
 }
