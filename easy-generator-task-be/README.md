@@ -29,6 +29,20 @@ A secure NestJS backend application with JWT authentication, refresh tokens, rat
   - Unit tests with Jest
   - Test coverage for services and controllers
 
+## Architecture
+
+The application follows a modular architecture with clear separation of concerns:
+
+### Service Relationships
+
+![Backend Architecture](docs/UML.png)
+
+**Architecture Overview:**
+- **AuthService** handles authentication and uses **UsersService** for user management
+- **UsersService** provides business logic and delegates to **UsersRepository** for data persistence
+- **ContentService** is protected by JWT Guard from the Auth module
+- Clean separation: authentication → business logic → data access
+
 ## Prerequisites
 
 - Node.js (v18 or higher)
